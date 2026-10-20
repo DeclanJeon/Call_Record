@@ -1,0 +1,26 @@
+/*
+ * Call_Record: FOSS call recording for Android, based on ShizuCallRecorder.
+ *  Copyright (C) 2026-present kitsumed (Med)   (original ShizuCallRecorder)
+ *  Copyright (C) 2026 Call_Record contributors
+ *  This software is licensed under the GNU General Public License v3 or later, with additional terms as permitted under Section 7.
+ *  The full license text is available in the LICENSE file at the root of this project.
+ *  This software is distributed WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ */
+
+package com.declan.callrecord
+
+import android.app.Application
+import com.declan.callrecord.services.callDetection.CallDetectionOrchestrator
+import com.declan.callrecord.utils.AppLogger
+
+/**
+ * CallRecordApplication is run when the app process is created. Can be seen as the very first entry point of the app.
+ */
+class CallRecordApplication : Application() {
+    override fun onCreate() {
+        super.onCreate()
+        AppLogger.init(applicationContext)
+        // Sync configurations down to PackageManager mapping immediately on launch
+        CallDetectionOrchestrator(applicationContext).syncComponents()
+    }
+}

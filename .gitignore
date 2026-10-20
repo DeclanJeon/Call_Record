@@ -1,0 +1,19 @@
+# Gradle
+.gradle/
+build/
+app/build/
+local.properties
+
+# Keystore (secrets) - never commit
+keystore/
+
+# Reference clones
+reference/
+
+# IDE
+.idea/
+*.iml
+.DS_Store
+
+# Output
+*.apk
