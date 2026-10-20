@@ -1302,6 +1302,11 @@ private fun SettingsScreenPreview() {
             override fun setTranscriptionEnabled(enabled: Boolean) {}
             override fun setDriveBackupEnabled(enabled: Boolean) {}
             override fun setDriveBackupFolderUri(uri: Uri?) {}
+            override fun setAnnouncementToneEnabled(enabled: Boolean) {}
+            override fun setAnnouncementToneType(type: String) {}
+            override fun setRecordAllAppCallsEnabled(enabled: Boolean) {}
+            override fun setRecordedAppPackages(packages: Set<String>) {}
+            override fun setAppCallAudioSource(source: String) {}
         }
 
         // File name template selection dialog
