@@ -82,6 +82,11 @@ interface SettingsActions {
 
     // --- Call_Record ---
     fun setVerificationReportEnabled(enabled: Boolean)
+    fun setAnnouncementToneEnabled(enabled: Boolean)
+    fun setAnnouncementToneType(type: String)
+    fun setRecordAllAppCallsEnabled(enabled: Boolean)
+    fun setRecordedAppPackages(packages: Set<String>)
+    fun setAppCallAudioSource(source: String)
     fun setTranscriptionEnabled(enabled: Boolean)
     fun setDriveBackupEnabled(enabled: Boolean)
     fun setDriveBackupFolderUri(uri: android.net.Uri?)
@@ -442,6 +447,31 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
 
     override fun setVerificationReportEnabled(enabled: Boolean) {
         preferences.setVerificationReportEnabled(enabled)
+        refresh()
+    }
+
+    override fun setAnnouncementToneEnabled(enabled: Boolean) {
+        preferences.setAnnouncementToneEnabled(enabled)
+        refresh()
+    }
+
+    override fun setAnnouncementToneType(type: String) {
+        preferences.setAnnouncementToneType(type)
+        refresh()
+    }
+
+    override fun setRecordAllAppCallsEnabled(enabled: Boolean) {
+        preferences.setRecordAllAppCallsEnabled(enabled)
+        refresh()
+    }
+
+    override fun setRecordedAppPackages(packages: Set<String>) {
+        preferences.setRecordedAppPackages(packages)
+        refresh()
+    }
+
+    override fun setAppCallAudioSource(source: String) {
+        preferences.setAppCallAudioSource(source)
         refresh()
     }
 

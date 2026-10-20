@@ -24,11 +24,13 @@ import com.declan.callrecord.data.call.EnrichedCallData
 import com.declan.callrecord.integrations.shizuku.ShizukuConnectionManager
 import com.declan.callrecord.utils.AppLogger
 import com.declan.callrecord.utils.AppScope
+import com.declan.callrecord.notify.AnnouncementTone
 import com.declan.callrecord.transcription.TranscriptionService
 import com.declan.callrecord.verify.RecordingPostProcessor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -309,6 +311,9 @@ class RecordingForegroundService : Service() {
             // 3. Success
             _serviceState.update { RecordingServiceState.Active(activeSession, false, metadata) }
             AppLogger.i( "Recording pipeline started successfully")
+
+            // 4. Call_Record: announce the recording with a short tone so the other party knows.
+            playAnnouncementTone(metadata)
         } catch (e: PipelineInitializationException) {
             AppLogger.e( e.message ?: "", e.cause ?: e)
             notificationHelper.showErrorNotification(e.userFriendlyMessage)
@@ -365,6 +370,31 @@ class RecordingForegroundService : Service() {
                 AppLogger.i( "The recording session has been stopped and resources have been released. Stopping foreground service. Goodbye >3")
                 stopForeground(STOP_FOREGROUND_REMOVE)
                 stopSelf() // Stop the service since the session is over
+            }
+        }
+    }
+
+    /**
+     * Plays the announcement tone that tells the other party that the call is being recorded.
+     *
+     * The tone is played on the call path, so it is heard by the remote party. It is played with a
+     * small delay to let the call audio settle, and it is also captured in the recording itself,
+     * which makes it easy to verify in the generated report.
+     */
+    private fun playAnnouncementTone(metadata: EnrichedCallData) {
+        if (!appPreferences.isAnnouncementToneEnabled()) {
+            AppLogger.d( "The announcement tone is disabled, skipping it" )
+            return
+        }
+        val type = appPreferences.getAnnouncementToneType()
+        AppScope.scope.launch {
+            // Small delay so the tone is not swallowed by the first moments of the call.
+            delay(400)
+            runCatching {
+                AnnouncementTone.play(applicationContext, type)
+                AppLogger.i( "Announcement tone played (type=$type)" )
+            }.onFailure {
+                AppLogger.w( "Could not play the announcement tone: ${it.message}" )
             }
         }
     }

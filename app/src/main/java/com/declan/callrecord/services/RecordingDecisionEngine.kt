@@ -14,6 +14,7 @@ import android.content.Intent
 import android.net.Uri
 import android.provider.ContactsContract
 import com.declan.callrecord.data.AppPreferences
+import com.declan.callrecord.data.CallPackageUtils
 import com.declan.callrecord.data.call.CallDirection
 import com.declan.callrecord.data.call.EnrichedCallData
 import com.declan.callrecord.data.call.RawCallData
@@ -119,10 +120,37 @@ class RecordingDecisionEngine private constructor(context: Context) {
     private fun shouldAutoRecord(metadata: EnrichedCallData): Boolean {
         val isAnonymous = metadata.normalisedPhoneNumber.isBlank()
 
+        // Call_Record: calls from messaging apps (KakaoTalk, WhatsApp, ...) are filtered separately,
+        // because the audio source and the legal situation are different from carrier calls.
+        if (CallPackageUtils.isAppCall(appContext, metadata.packageName)) {
+            return shouldRecordAppCall(metadata)
+        }
+
         return when (metadata.direction) {
             CallDirection.INCOMING -> evaluateIncomingCall(metadata, metadata.normalisedPhoneNumber, isAnonymous)
             CallDirection.OUTGOING -> evaluateOutgoingCall(metadata, metadata.normalisedPhoneNumber)
         }
+    }
+
+    /**
+     * Decides if a call of a messaging application should be recorded.
+     *
+     * The user can either record every application call, or pick the applications one by one.
+     */
+    private fun shouldRecordAppCall(metadata: EnrichedCallData): Boolean {
+        val packageName = metadata.packageName ?: return false
+        if (!appPreferences.isRecordThirdPartyCallsEnabled()) {
+            AppLogger.i( "App call recording is disabled, skipping $packageName" )
+            return false
+        }
+        if (appPreferences.isRecordAllAppCallsEnabled()) {
+            AppLogger.i( "Recording app call from $packageName (all apps enabled)" )
+            return true
+        }
+        val selected = appPreferences.getRecordedAppPackages()
+        val allowed = selected.contains(packageName)
+        AppLogger.i( "App call from $packageName allowed=$allowed (selected=$selected)" )
+        return allowed
     }
 
     /**

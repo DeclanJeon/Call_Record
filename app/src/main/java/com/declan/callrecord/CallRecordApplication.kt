@@ -10,6 +10,7 @@
 package com.declan.callrecord
 
 import android.app.Application
+import com.declan.callrecord.data.AppPreferences
 import com.declan.callrecord.services.callDetection.CallDetectionOrchestrator
 import com.declan.callrecord.utils.AppLogger
 
@@ -20,6 +21,8 @@ class CallRecordApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         AppLogger.init(applicationContext)
+        // Call_Record: the app records every call automatically, make sure the switches are on.
+        AppPreferences(applicationContext).applyCallRecordDefaultsOnce()
         // Sync configurations down to PackageManager mapping immediately on launch
         CallDetectionOrchestrator(applicationContext).syncComponents()
     }

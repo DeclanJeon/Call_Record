@@ -17,6 +17,7 @@ import androidx.documentfile.provider.DocumentFile
 import com.declan.callrecord.IShellService
 import com.declan.callrecord.R
 import com.declan.callrecord.data.AppPreferences
+import com.declan.callrecord.data.CallPackageUtils
 import com.declan.callrecord.data.call.EnrichedCallData
 import com.declan.callrecord.integrations.scrcpy.ScrcpyAudioCodec
 import com.declan.callrecord.integrations.scrcpy.ScrcpyAudioMuxer
@@ -126,9 +127,23 @@ class AudioRecordingEngine {
 
         val codecEnum = ScrcpyAudioCodec.fromKey(preferences.getAudioCodec())
         val bitRate = preferences.getAudioBitRate().takeIf { it > 0 } ?: codecEnum.defaultBitRate
-        val audioSourceEnum = ScrcpyAudioSource.fromKey(preferences.getAudioSource())
 
-        AppLogger.i( "Starting recording pipeline: source=${audioSourceEnum.cliKey} codec=${codecEnum.cliKey} bitrate=$bitRate")
+        // Call_Record: carrier calls use the telephony call source, which captures both sides.
+        // Calls from messaging applications do not go through the telephony call audio path, so a
+        // different source (microphone based or the speaker output) is used for them.
+        val isAppCall = CallPackageUtils.isAppCall(context, metadata.packageName)
+        val audioSourceKey = if (isAppCall) {
+            preferences.getAppCallAudioSource()
+        } else {
+            preferences.getAudioSource()
+        }
+        val audioSourceEnum = runCatching { ScrcpyAudioSource.fromKey(audioSourceKey) }
+            .getOrElse {
+                AppLogger.w( "Unknown audio source '$audioSourceKey', falling back to the default" )
+                ScrcpyAudioSource.VOICE_COMMUNICATION
+            }
+
+        AppLogger.i( "Starting recording pipeline: source=${audioSourceEnum.cliKey} codec=${codecEnum.cliKey} bitrate=$bitRate appCall=$isAppCall")
 
         val fileName = RecordingFileNameFormatter.formatFileName(context, metadata, codecEnum)
 

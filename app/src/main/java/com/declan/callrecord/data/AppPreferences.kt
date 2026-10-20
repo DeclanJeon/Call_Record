@@ -45,11 +45,27 @@ class AppPreferences(context: Context) {
         val RECORDING_FOLDER_URI: String? = null
         const val VIBRATION_ENABLED = true
         val CALL_DETECTION_MODE = CallDetectionMode.getDefaultModeForDevice().key
-        const val RECORD_THIRD_PARTY_CALLS = false
 
         const val POST_RECORDING_FILE_ACTIONS_NOTIFICATION_ENABLED = false
-        const val AUTO_RECORD_INCOMING = false
-        const val AUTO_RECORD_OUTGOING = false
+
+        // Call_Record: the app records automatically as soon as a call starts, no extra switch needed.
+        const val AUTO_RECORD_INCOMING = true
+        const val AUTO_RECORD_OUTGOING = true
+        const val RECORD_THIRD_PARTY_CALLS = true
+
+        // --- Call_Record: messenger app calls ---
+        /** Record calls from every app that uses the Android telecom system (WhatsApp, KakaoTalk, ...). */
+        const val RECORD_ALL_APP_CALLS = true
+        /** Package names of the messenger apps that should be recorded. */
+        val RECORDED_APP_PACKAGES: Set<String> = emptySet()
+        /** Audio source used for app (OTT) calls, where the carrier call audio source is not available. */
+        const val APP_CALL_AUDIO_SOURCE = "mic-voice-communication"
+
+        // --- Call_Record: announcement tone (recording beep) ---
+        /** Play a short tone when the recording starts so the other party knows. */
+        const val ANNOUNCEMENT_TONE_ENABLED = true
+        /** The kind of tone that is played. */
+        const val ANNOUNCEMENT_TONE_TYPE = "short"
 
         // --- Call_Record: verification & transcription ---
         /** Automatically write the .txt/.json verification report after every recording. */
@@ -115,6 +131,12 @@ class AppPreferences(context: Context) {
         TRANSCRIPTION_ENABLED("transcription_enabled"),
         DRIVE_BACKUP_ENABLED("drive_backup_enabled"),
         DRIVE_BACKUP_FOLDER_URI("drive_backup_folder_uri"),
+        RECORD_ALL_APP_CALLS("record_all_app_calls"),
+        RECORDED_APP_PACKAGES("recorded_app_packages"),
+        APP_CALL_AUDIO_SOURCE("app_call_audio_source"),
+        ANNOUNCEMENT_TONE_ENABLED("announcement_tone_enabled"),
+        ANNOUNCEMENT_TONE_TYPE("announcement_tone_type"),
+        CALL_RECORD_MIGRATED("call_record_migrated_v1"),
         AUTO_RECORD_INCOMING("auto_record_incoming"),
         AUTO_RECORD_OUTGOING("auto_record_outgoing"),
         IGNORE_ANONYMOUS_INCOMING("ignore_anonymous_incoming"),
@@ -275,6 +297,49 @@ class AppPreferences(context: Context) {
     fun isDriveBackupEnabled() = getBoolean(Key.DRIVE_BACKUP_ENABLED, DefaultsValue.DRIVE_BACKUP_ENABLED)
 
     fun setDriveBackupEnabled(enabled: Boolean) = setBoolean(Key.DRIVE_BACKUP_ENABLED, enabled)
+
+    // --- Call_Record: messenger app calls ---
+
+    /** True when calls of every telecom based app should be recorded. */
+    fun isRecordAllAppCallsEnabled() = getBoolean(Key.RECORD_ALL_APP_CALLS, DefaultsValue.RECORD_ALL_APP_CALLS)
+
+    fun setRecordAllAppCallsEnabled(enabled: Boolean) = setBoolean(Key.RECORD_ALL_APP_CALLS, enabled)
+
+    /** Package names of the messenger apps that should be recorded. */
+    fun getRecordedAppPackages(): Set<String> = getStringSet(Key.RECORDED_APP_PACKAGES, DefaultsValue.RECORDED_APP_PACKAGES)
+
+    fun setRecordedAppPackages(packages: Set<String>) = setStringSet(Key.RECORDED_APP_PACKAGES, packages)
+
+    /** The audio source used for app (OTT) calls. */
+    fun getAppCallAudioSource(): String = getString(Key.APP_CALL_AUDIO_SOURCE, DefaultsValue.APP_CALL_AUDIO_SOURCE) ?: DefaultsValue.APP_CALL_AUDIO_SOURCE
+
+    fun setAppCallAudioSource(source: String) = setString(Key.APP_CALL_AUDIO_SOURCE, source)
+
+    // --- Call_Record: announcement tone ---
+
+    /** True when the announcement tone (recording beep) should be played. */
+    fun isAnnouncementToneEnabled() = getBoolean(Key.ANNOUNCEMENT_TONE_ENABLED, DefaultsValue.ANNOUNCEMENT_TONE_ENABLED)
+
+    fun setAnnouncementToneEnabled(enabled: Boolean) = setBoolean(Key.ANNOUNCEMENT_TONE_ENABLED, enabled)
+
+    /** The kind of tone that is played when the recording starts. */
+    fun getAnnouncementToneType(): String = getString(Key.ANNOUNCEMENT_TONE_TYPE, DefaultsValue.ANNOUNCEMENT_TONE_TYPE) ?: DefaultsValue.ANNOUNCEMENT_TONE_TYPE
+
+    fun setAnnouncementToneType(type: String) = setString(Key.ANNOUNCEMENT_TONE_TYPE, type)
+
+    /**
+     * Call_Record: makes sure the automatic recording is enabled after the first launch.
+     *
+     * The app is meant to record as soon as a call starts, so the switches are forced on once
+     * for existing installations as well.
+     */
+    fun applyCallRecordDefaultsOnce() {
+        if (getBoolean(Key.CALL_RECORD_MIGRATED, false)) return
+        setBoolean(Key.AUTO_RECORD_INCOMING, true)
+        setBoolean(Key.AUTO_RECORD_OUTGOING, true)
+        setBoolean(Key.RECORD_THIRD_PARTY_CALLS, true)
+        setBoolean(Key.CALL_RECORD_MIGRATED, true)
+    }
 
     /** The SAF tree uri of the Google Drive backup folder. */
     fun getDriveBackupFolderUri(): Uri? = getString(Key.DRIVE_BACKUP_FOLDER_URI, DefaultsValue.DRIVE_BACKUP_FOLDER_URI)?.toUri()
