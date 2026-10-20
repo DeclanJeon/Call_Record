@@ -360,3 +360,33 @@ Call_Record — 녹음 검증 리포트
 4. app 잠금(생체/PIN) — 통화 내용 보호
 5. Whisper.cpp 엔진(선택) — 전사 정확도 상향
 6. CI 워크플로(GitHub Actions) 및 F-Droid 메타데이터
+
+
+---
+
+## 14. v0.2.0 추가 기능 (사용자 요청 반영)
+
+### 14.1 녹음 고지음
+| 항목 | 내용 |
+|---|---|
+| 목적 | 상대방이 "녹음 중"을 인지하게 하여 통신비밀보호법상 동의 요건을 충족 |
+| 구현 | `notify/AnnouncementTone` — `AudioTrack`(`MODE_IN_COMMUNICATION`, `USAGE_VOICE_COMMUNICATION`)으로 **통화 경로에 주입**. VoIP 앱이 통화 중 소리를 전달하는 경로와 동일하므로 상대방도 들음 |
+| 폴백 | 통화 경로 재생 실패 시 `ToneGenerator(STREAM_VOICE_CALL)` 스피커 재생 |
+| 종류 | `short`(1회 삐) / `double`(2회 삐) / `chime`(띵동) — 설정에서 선택 + 미리듣기 버튼 |
+| 기본값 | ON (법적 안전을 위해 끄지 않기를 권장) |
+| 타이밍 | 녹음 파이프라인 시작 후 400ms 지연 (통화 오디오 안정화 대기) |
+| 부수 효과 | 고지음이 녹음 파일에 함께 담김 → "녹음이 실제로 시작되었는지" 확인할 수 있는 증거 |
+
+### 14.2 자동 녹음 기본 ON
+- `AUTO_RECORD_INCOMING/OUTGOING`, `RECORD_THIRD_PARTY_CALLS` 기본값을 `true`로 변경
+- `AppPreferences.applyCallRecordDefaultsOnce()` — 최초 실행(및 업데이트 후 첫 실행)에 스위치를 강제 ON → **"녹음 기능을 켜야 녹음되는" UX 제거**
+- 사용자가 의도적으로 끈 경우에는 그대로 유지(1회만 강제)
+
+### 14.3 메신저 앱(OTT) 통화 녹음
+| 계층 | 내용 |
+|---|---|
+| 감지 | `InCallService` + `INCLUDE_SELF_MANAGED_CALLS=true` (업스트림 기능) → **Android 12+ 필수**. Android 11은 `MANAGE_ONGOING_CALLS` AppOps가 없어 앱 통화 감지 불가 |
+| 필터 | `CallAppRegistry`(카카오톡/카카오워크/텔레그램/LINE/WhatsApp/WhatsApp Business/Skype/Meet/Zoom/Teams/Signal/Viber/Discord/Messenger/WeChat/QQ/imo/Google Voice) — "모든 앱" 토글 또는 개별 체크 |
+| 오디오 소스 | 통신사 통화는 `voice-call`(양방향), 앱 통화는 별도 소스: `mic-voice-communication`(기본) / `output`(REMOTE_SUBMIX, 스피커 출력) / `playback`(AudioPlaybackCapture) / `mic-voice-recognition` |
+| 현실적 한계 | 앱 통화는 통화 신호 경로(telephony call audio)를 쓰지 않으므로 **상대 음성 잡음은 기기·앱·통화 방식에 의존**. 스피커폰 통화 + `output` 소스가 가장 선명 |
+| 리포트 | `.txt`에 "양방향/단방향 추정" 대신 음성 구간 통계로 판정 — 앱 통화는 상대 음성이 약해 "음성 미검출"이 나올 수 있음(리포트에 경고 표기) |
