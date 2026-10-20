@@ -254,10 +254,15 @@ Call_Record — 녹음 검증 리포트
 
 ## 8. 빌드 & 배포 세부
 
-### 8.1 로컬 빌드 (권장: GitHub Actions)
-현재 이 PC에는 JDK/Android SDK가 없다. 두 옵션:
-- **(A) GitHub Actions** (권장): 저장소를 GitHub에 올리고 `build-apk.yml` 추가 → 태그/수동 실행으로 APK 생성 → Releases에 업로드. 로컬 설치 불필요, 무료(퍼블릭 저장소).
-- **(B) 로컬 설치**: `sudo apt install openjdk-17-jdk` + `dl.google.com` 의 `commandlinetools` + `sdkmanager "platforms;android-36" "build-tools;36.0.0"` → `./gradlew assembleRelease`. 약 15~30분/1회, 디스크 ~3GB.
+### 8.1 로컬 빌드 (구축 완료 ✅)
+루트 권한 없이 사용자 홈에 설치했다.
+- JDK 17 (Temurin) → `~/tools/jdk-17.0.20.1+1`
+- Android SDK 36 (platform-tools, platforms;android-36, build-tools;36.0.0, ndk;27.2.12479018, cmake;3.22.1) → `~/Android/Sdk`
+- Gradle 9.4.1 → `~/tools/gradle-9.4.1` (래퍼 JAR는 저장소에 포함)
+- 환경변수는 `source ~/tools/env.sh`
+- 빌드: `./gradlew :app:assembleRelease` → `app/build/outputs/apk/release/app-release.apk` (약 22.7MB, 서명됨)
+- 서명 키: `keystore/call-record.jks` (저장소 미커밋, **분실 시 업데이트 불가**)
+- 대안(GitHub Actions)은 그대로 사용 가능 — CI 워크플로는 후속 추가 예정
 
 ### 8.2 서명
 - 자체 debug/release 키 생성(keystore). 분실 대비 백업 필수(업데이트 시 동일 서명 필요).
@@ -293,17 +298,29 @@ Call_Record — 녹음 검증 리포트
 
 ---
 
-## 11. 미결정 사항 (답 주시면 설계를 확정합니다)
+## 11. 확정된 결정 (2026-10-21 사용자 확정)
 
-1. **기기와 OS 버전** — 모델명 + Android 버전(12/13/14/15/16).某些 기기는 `voice-call` 소스를 지원하지 않음.
-2. **루트 여부** — 루트 가능/희망에 따라 BCR(단순·안정) 경로가 더 단순해질 수 있음(Shizuku 불필요).
-3. **Shizuku 설치 가능 여부** — 무선 ADB 페어링 가능한 환경인지(집/사무실 Wi-Fi, 개발자옵션 ON 가능 여부).
-4. **"내용을 파일로 남김"의 의미** —
-   (a) 녹음 파일의 **통역 텍스트**(사람 말 → 텍스트) ?
-   (b) 녹음 파일의 **음향 데이터/통계**를 텍스트로 ?
-   (c) 둘 다 ?
-   → (a)라면 v2에서 Whisper.cpp 온디바이스 전사가 필수 범위에 들어갑니다(모델 다운로드 필요).
-5. **저장 위치** — 폰 내부 저장만, 아니면 PC/클라우드 자동 백업(비용·복잡도 ↑).
+| # | 질문 | 결정 | 반영 |
+|---|---|---|---|
+| 1 | 호환 범위 | **Android 11+ 전부**(2020년형 기종 대부분이 Android 12+ 로 업데이트됨) | `minSdk = 30` 유지. Android 10은 scrcpy 오디오 캡처가 API 30 미만에서 비활성되어 **미지원**(v1.1에서 자체 캡처 구현 검토) |
+| 2 | 루트 | **루트 불필요**, Shizuku 사용 | ShizuCallRecorder 기반 그대로 |
+| 3 | Shizuku | **가능** | 베이스 확정 |
+| 4 | "내용을 파일로" | **통화 내용을 텍스트로 전사** | v1에 포함. 엔진은 **Vosk**(`vosk-model-small-ko-0.22`, 40MB, 네이티브 빌드 불필요) 채택 — Whisper.cpp는 정확도 상향 옵션으로 v2 |
+| 5 | 백업 | **Google 계정(Google Drive) 자동 백업** | **SAF 폴더 선택 방식** 채택 — 시스템 폴더 선택기에서 "Google Drive"를 고르면 끝나며 OAuth/클라우드 프로젝트 불필요. v1은 `DriveBackup`(파일 복사 미러링) |
+| 6 | 양방향 | **양방향 필수** | `voice-call` 소스(상대+내음) 기본값, 실패 시 `mic-voice-communication` 폴백 |
+
+### v1에 포함된 것
+- 자동 통화 녹음(수신/발신) + 양방향 캡처
+- 녹음 종료 → 자동 검증 리포트(`.txt` + `.json`) 생성
+- 온디바이스 전사(Vosk) → 텍스트 + `.srt`
+- Google Drive 폴더 자동 백업
+- 녹음 목록 화면(검증/전사 재실행 버튼)
+
+### v1에서 제외(향후)
+- 통화 녹음 고지음(비프) — **법적 안전을 위해 다음 버전에서 기본 ON으로 추가 예정**
+- 앱 잠금(생체/PIN) — 통화 내용은 민감정보
+- Whisper.cpp 엔진(전사 정확도 상향)
+- Android 10 대응 자체 캡처 구현
 
 ---
 
@@ -316,3 +333,30 @@ Call_Record — 녹음 검증 리포트
 - scrcpy (audio_direct_capture): https://github.com/Genymobile/scrcpy
 - Android AudioSource 제약: https://developer.android.com/reference/android/media/MediaRecorder.AudioSource
 - FGS 타입 규칙: https://developer.android.com/about/versions/14/changes/fgs-types-required
+
+
+---
+
+## 13. 구현 현황 (2026-10-21)
+
+### 완료
+| 항목 | 위치 | 상태 |
+|---|---|---|
+| 리브랜딩 (패키지 `com.declan.callrecord`, 앱명 "Call Record") | 전체 | ✅ 빌드/서명 완료 |
+| 검증 파이프라인: MediaCodec PCM 디코딩 → 모노 16kHz → VAD 분석 | `verify/PcmDecoder.kt`, `verify/AudioAnalyzer.kt` | ✅ |
+| 리포트 작성(사람용 `.txt` / 기계용 `.json`) | `verify/ReportWriter.kt` | ✅ |
+| 녹음 종료 자동 후처리 훅 | `services/recording/RecordingForegroundService.kt#runPostProcessing` | ✅ |
+| 온디바이스 전사(Vosk) + 모델 다운로드/관리 | `transcription/*` | ✅ (모델 40MB 최초 1회 다운로드) |
+| 자막(`srt`) 출력 | `verify/RecordingPostProcessor.kt` | ✅ |
+| Google Drive 백업(SAF 미러링) | `backup/DriveBackup.kt` | ✅ |
+| 녹음 목록 화면(검증/전사 재실행) | `ui/screens/RecordingsScreen.kt` | ✅ |
+| 설정 섹션(리포트/전사/백업 토글, 모델 받기) | `ui/screens/CallRecordSection.kt` | ✅ |
+| ABI 필터(arm64-v8a, armeabi-v7a)로 APK 크기 축소 | `app/build.gradle.kts` | ✅ 105MB → 22.7MB |
+
+### 남은 작업
+1. **실기기 검증** (핵심): Shizuku 설치 → 통화 → 녹음 → `.txt`/`.srt` 생성 → Drive 백업 확인
+2. 통화 녹음 **고지음(비프)** 구현 (법적 안전, 기본 ON)
+3. Android 10 대응(쉘 권한 기반 자체 AudioRecord + `VOICE_CALL` 캡처)
+4. app 잠금(생체/PIN) — 통화 내용 보호
+5. Whisper.cpp 엔진(선택) — 전사 정확도 상향
+6. CI 워크플로(GitHub Actions) 및 F-Droid 메타데이터
