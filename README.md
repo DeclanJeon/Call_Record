@@ -1,5 +1,9 @@
 # Call_Record
 
+[![Build APK](https://github.com/DeclanJeon/Call_Record/actions/workflows/build-apk.yml/badge.svg)](https://github.com/DeclanJeon/Call_Record/actions/workflows/build-apk.yml)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
+[![Release](https://img.shields.io/github/v/release/DeclanJeon/Call_Record?label=Release)](https://github.com/DeclanJeon/Call_Record/releases/latest)
+
 무료·오픈소스 기반 안드로이드 자동 통화 녹음 앱.
 **Cube ACR의 유료 기능(자동 통화 녹음 + 통화 내용 전사 + 클라우드 백업) 중 필요한 부분만** GPL 오픈소스 코드에서 재구성했습니다.
 
