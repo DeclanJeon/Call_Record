@@ -23,10 +23,12 @@ import com.declan.callrecord.data.AppPreferences
 import com.declan.callrecord.data.call.EnrichedCallData
 import com.declan.callrecord.integrations.shizuku.ShizukuConnectionManager
 import com.declan.callrecord.utils.AppLogger
+import com.declan.callrecord.utils.AppScope
 import com.declan.callrecord.transcription.TranscriptionService
 import com.declan.callrecord.verify.RecordingPostProcessor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -352,12 +354,19 @@ class RecordingForegroundService : Service() {
         }
 
         // Call_Record: generate the verification report (and transcript when enabled) for the finished recording.
-        runPostProcessing(activeSession)
-
         _serviceState.update { RecordingServiceState.Standby(null) }
-        AppLogger.i( "The recording session has been stopped and resources have been released. Stopping foreground service. Goodbye >3")
-        stopForeground(STOP_FOREGROUND_REMOVE)
-        stopSelf() // Stop the service since the session is over
+
+        // Call_Record: generate the verification report (and the transcript when enabled) for the
+        // finished recording. The foreground service stays alive until the work is done, so the
+        // process is not killed in the middle of the analysis.
+        val postProcessJob = runPostProcessing(activeSession)
+        postProcessJob.invokeOnCompletion {
+            AppScope.scope.launch {
+                AppLogger.i( "The recording session has been stopped and resources have been released. Stopping foreground service. Goodbye >3")
+                stopForeground(STOP_FOREGROUND_REMOVE)
+                stopSelf() // Stop the service since the session is over
+            }
+        }
     }
 
     /**
@@ -366,11 +375,11 @@ class RecordingForegroundService : Service() {
      * It decodes the recording, analyses it and writes the `.txt` / `.json` report next to it.
      * Failures are logged and never break the recording flow.
      */
-    private fun runPostProcessing(session: AudioRecordingEngine) {
-        val recordingUri = session.currentRecordingUri ?: return
+    private fun runPostProcessing(session: AudioRecordingEngine): Job {
+        val recordingUri = session.currentRecordingUri ?: return Job().apply { complete() }
         val metadata = session.initializationMetadata
         val appContext = applicationContext
-        serviceScope.launch(Dispatchers.IO) {
+        return AppScope.scope.launch(Dispatchers.IO) {
             runCatching {
                 val processor = RecordingPostProcessor(appContext)
                 val result = processor.process(

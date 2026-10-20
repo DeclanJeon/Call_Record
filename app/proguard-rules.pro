@@ -38,3 +38,10 @@
   v(...);
   java.lang.String getCallerTag(); # Needed because this is used as a parameter the v() method above
 }
+# --- Call_Record: on-device speech recognition (Vosk / JNA) ---
+# The Vosk bindings and JNA are reached through reflection and JNI, so they must be kept.
+-keep class org.vosk.** { *; }
+-keep class com.sun.jna.** { *; }
+-keepclassmembers class * extends com.sun.jna.** { *; }
+-dontwarn com.sun.jna.**
+-dontwarn org.vosk.**
