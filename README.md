@@ -64,7 +64,7 @@ cd ~/Documents/Projects/Products/01_Persnal_Work/call_record
    - 설치: [thedjchi/Shizuku](https://github.com/thedjchi/Shizuku) (F-Droid / GitHub 릴리스)
    - 개발자 옵션 → "무선 디버깅" 켜고, Shizuku 앱에서 "pairing via Wi-Fi" 로 기기와 페어링
    - ※ Shizuku는 재부팅 후 종료되므로, 필요할 때 "부팅 시 자동 시작" 옵션을 켜거나 개발자옵션에서 Shizuku를 부팅 앱으로 지정
-2. **Call_Record 설치**: `app-release.apk` 를 기기에 설치(설정 → 알 수 없는 앱 허용)
+2. **Call_Record 설치**: [Releases](https://github.com/DeclanJeon/Call_Record/releases/latest) 에서 `CallRecord-v0.2.0.apk` 를 내려받아 설치(설정 → 알 수 없는 앱 허용)
 3. 앱을 열고:
    - 저장 폴더 지정(기본: `Documents/CallRecord`)
    - 권한 부여(알림, 전화 상태 등)
