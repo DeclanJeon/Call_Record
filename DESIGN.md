@@ -89,7 +89,7 @@ XAPK 구조(확인 완료): `com.catalinagroup.callrecorder.apk`(24MB) + 언어/
    - 그래서 **루트(시스템앱)** 또는 **ADB/Shizuku(shell 권한)** 가 필수. 이것이 사실상 표준 해법이다.
 2. **VOICE_COMMUNICATION/MIC 만 쓰는 일반앱**은 마이크만 잡고 상대 음은 잡히지 않거나(에코 상쇄로 소거) 품질이 급락한다. 일부 기기(특히 Pixel 계열)만 양방향.
 3. **번호(전화번호) 확보**: Android 10+ 에서는 `READ_CALL_LOG` 이 하드 제한으로 일반 앱이 못 읽는다.
-   → 해결책: `InCallService`(电信 `MANAGE_ONGOING_CALLS`)를 사용하고, Shell 권한으로 `appops set <pkg> MANAGE_OWN_CALLS allow` + `cmd role add-role-holder ... DIALER` 등을 부여(ShizuCallRecorder가 이미 구현).
+   → 해결책: `InCallService`(Telecom `MANAGE_ONGOING_CALLS`)를 사용하고, Shell 권한으로 `appops set <pkg> MANAGE_OWN_CALLS allow` + `cmd role add-role-holder ... DIALER` 등을 부여(ShizuCallRecorder가 이미 구현).
 4. **Foreground Service**: Android 14+ 는 `FOREGROUND_SERVICE_MICROPHONE` / `specialUse` 사유 명시 필수. 녹음 중 반드시 FGS.
 5. **직접 부팅(Direct Boot)**: 재부팅 직후 잠금화면 상태에서의 통화 녹음은 `deviceProtectedStorage` + `directBootAware` 필요(BCR가 구현, v1은 선택).
 
@@ -152,7 +152,7 @@ XAPK 구조(확인 완료): `com.catalinagroup.callrecorder.apk`(24MB) + 언어/
 <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
 <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
-<uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" tools:ignore="PackageVisibilityPolicy" /> <!-- 상대방拨号앱 판별 -->
+<uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" tools:ignore="PackageVisibilityPolicy" /> <!-- 상대방 발신앱 판별 -->
 <!-- 없음: INTERNET / LOCATION / BLUETOOTH / NFC / AD_ID / BILLING -->
 ```
 
@@ -279,7 +279,7 @@ Call_Record — 녹음 검증 리포트
 | 리스크 | 영향 | 대응 |
 |---|---|---|
 | Shizuku가 안 돌아감(재부팅 후 종료) | 자동 녹음 안 됨 | 앱 내 상태 감지 배너 + `adb shell`/무선 ADB 재페어링 가이드 |
-| 기기 제조사 롤(拨号앱) 충돌 | InCallService가 호출되지 않음 | PhoneStateReceiver 폴백 경로 유지(양쪽 다 구현) |
+| 기기 제조사 롤(발신앱) 충돌 | InCallService가 호출되지 않음 | PhoneStateReceiver 폴백 경로 유지(양쪽 다 구현) |
 | 상대 음성이 파일에 안 잡힘 | 핵심 기능 실패 | audio_source 폴백 체인: `voice-call` → `mic-voice-communication` → `mic`; 리포트로 "음성 미검출" 경고 |
 | 배터리 최적화로 FGS 종료 | 녹음 중 끊김 | `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` + 제조사별 최적화 해제 안내 |
 | OEM 킬러앱 처리 | 통화 중 프로세스 종료 | Shizuku 쉘 프로세스(별도 프로세스)에서 녹음 → 앱 죽어도 녹음 유지 |

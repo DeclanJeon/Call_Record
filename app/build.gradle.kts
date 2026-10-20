@@ -9,6 +9,7 @@
 
 import java.net.URI
 import java.security.MessageDigest
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
@@ -147,14 +148,26 @@ android {
             abiFilters += listOf("arm64-v8a", "armeabi-v7a")
         }
     }
+    // Call_Record: the signing key and its passwords are never part of the repository.
+    // They are read from "keystore.properties" (git-ignored) or from the environment.
+    val keystorePropertiesFile = rootProject.file("keystore.properties")
+    val keystoreProperties = Properties().apply {
+        if (keystorePropertiesFile.exists()) {
+            keystorePropertiesFile.inputStream().use { load(it) }
+        }
+    }
+    val localKeystorePath = keystoreProperties.getProperty("storeFile")
+        ?: System.getenv("KEYSTORE_FILE")
+    val localKeystoreExists = localKeystorePath != null && rootProject.file(localKeystorePath).exists()
+
     signingConfigs {
-        // Signing config for CI environments.
-        create("ci-release") {
-            if (isEnvironmentGithubCI && !shouldSkipSigning) {
-                storeFile = file(System.getenv("KEYSTORE_FILE") ?: throw GradleException("Keystore file not provided for release signing. env variable: KEYSTORE_FILE"))
-                storePassword = System.getenv("KEYSTORE_PASSWORD") ?: throw GradleException("Keystore password not provided for release signing. env variable: KEYSTORE_PASSWORD")
-                keyAlias = System.getenv("KEY_ALIAS") ?: throw GradleException("Key alias not provided for release signing. env variable: KEY_ALIAS")
-                keyPassword = System.getenv("KEY_PASSWORD") ?:throw GradleException("Key password not provided for release signing. env variable: KEY_PASSWORD")
+        // Signing config that reads everything from keystore.properties / environment variables.
+        if (localKeystoreExists) {
+            create("local-release") {
+                storeFile = rootProject.file(localKeystorePath!!)
+                storePassword = keystoreProperties.getProperty("storePassword") ?: System.getenv("KEYSTORE_PASSWORD")
+                keyAlias = keystoreProperties.getProperty("keyAlias") ?: System.getenv("KEY_ALIAS")
+                keyPassword = keystoreProperties.getProperty("keyPassword") ?: System.getenv("KEY_PASSWORD")
             }
         }
     }
@@ -166,24 +179,12 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            // Call_Record: local release signing with a keystore kept outside of the repository.
-            val localKeystore = file("../keystore/call-record.jks")
-            if (localKeystore.exists()) {
-                signingConfig = signingConfigs.create("local-release") {
-                    storeFile = localKeystore
-                    storePassword = (findProperty("CALL_RECORD_STORE_PASSWORD") as String?) ?: "callrecord"
-                    keyAlias = (findProperty("CALL_RECORD_KEY_ALIAS") as String?) ?: "callrecord"
-                    keyPassword = (findProperty("CALL_RECORD_KEY_PASSWORD") as String?) ?: "callrecord"
-                }
-            }
-            if (isEnvironmentGithubCI) {
-                logger.lifecycle("Configuring release build for CI environment. Official release signing keys will be used.")
-                if (shouldSkipSigning) {
-                    logger.warn("WARNING: SKIP_SIGNING is set. The build will NOT be signed, which may cause installation to fail on Android Devices. Do not set SKIP_SIGNING when BUILDING the apk! You can for other tasks.")
-                } else
-                {
-                    signingConfig = signingConfigs.getByName("ci-release")
-                }
+            // Call_Record: sign the release with the local key when one is configured.
+            if (localKeystoreExists) {
+                signingConfig = signingConfigs.getByName("local-release")
+                logger.lifecycle("Signing the release build with the local key ($localKeystorePath).")
+            } else {
+                logger.warn("No signing key configured (keystore.properties / KEYSTORE_FILE). The release APK will be unsigned and cannot be installed.")
             }
         }
     }

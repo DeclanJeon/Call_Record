@@ -1,0 +1,85 @@
+name: Build APK
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: '기존 릴리스 태그에 APK를 다시 올릴 때 사용 (예: v0.2.0). 비우면 빌드만 수행'
+        required: false
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build (JDK 17 / Android SDK 36)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Restore the signing key (optional)
+        # 저장소에 서명키는 포함되지 않습니다. 공개 배포용으로 서명하려면 저장소 Secrets에
+        # KEYSTORE_BASE64 / KEYSTORE_PASSWORD / KEY_ALIAS 를 등록하세요.
+        if: ${{ env.KEYSTORE_BASE64 != '' }}
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+        run: |
+          mkdir -p keystore
+          echo "$KEYSTORE_BASE64" | base64 -d > keystore/release.jks
+          cat > keystore.properties <<EOF
+          storeFile=keystore/release.jks
+          storePassword=$KEYSTORE_PASSWORD
+          keyAlias=$KEY_ALIAS
+          keyPassword=$KEYSTORE_PASSWORD
+          EOF
+
+      - name: Build the debug and release APKs
+        run: ./gradlew :app:assembleDebug :app:assembleRelease --no-daemon
+
+      - name: Upload the debug APK (always installable, for testing)
+        uses: actions/upload-artifact@v4
+        with:
+          name: CallRecord-debug
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+
+      - name: Upload the release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: CallRecord-release
+          path: app/build/outputs/apk/release/app-release.apk
+          if-no-files-found: error
+
+      - name: Attach the release APK to the GitHub release
+        if: ${{ startsWith(github.ref, 'refs/tags/v') || inputs.release_tag != '' }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.release_tag != '' && inputs.release_tag || github.ref_name }}
+          files: app/build/outputs/apk/release/app-release.apk
+          body: |
+            Call_Record 자동 통화 녹음 앱
+
+            설치: `app-release.apk` 를 내려받아 기기에 설치하세요(알 수 없는 앱 허용 필요).
+
+            - 통화 시작하면 자동으로 양방향 녹음됩니다(루트 불필요, Shizuku 사용).
+            - 통화 종료하면 검증 리포트(.txt/.json)와 전사(.srt)가 자동으로 만들어집니다.
+            - 카카오톡/WhatsApp 등 메신저 통화 녹음은 Android 12 이상에서 동작합니다.

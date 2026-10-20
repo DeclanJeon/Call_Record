@@ -4,8 +4,9 @@ build/
 app/build/
 local.properties
 
-# Keystore (secrets) - never commit
+# Keystore & secrets (never commit)
 keystore/
+keystore.properties
 
 # Reference clones
 reference/
