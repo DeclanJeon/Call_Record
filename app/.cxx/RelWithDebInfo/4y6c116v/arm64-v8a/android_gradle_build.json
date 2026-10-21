@@ -1,0 +1,75 @@
+{
+  "buildFiles": [
+    "/home/declan/Documents/Projects/Products/01_Persnal_Work/call_record/app/build/generated/whisper/whisper.cpp-1.9.5/CMakeLists.txt",
+    "/home/declan/Documents/Projects/Products/01_Persnal_Work/call_record/app/build/generated/whisper/whisper.cpp-1.9.5/ggml/CMakeLists.txt",
+    "/home/declan/Documents/Projects/Products/01_Persnal_Work/call_record/app/build/generated/whisper/whisper.cpp-1.9.5/ggml/src/CMakeLists.txt",
+    "/home/declan/Documents/Projects/Products/01_Persnal_Work/call_record/app/build/generated/whisper/whisper.cpp-1.9.5/ggml/src/ggml-cpu/CMakeLists.txt",
+    "/home/declan/Documents/Projects/Products/01_Persnal_Work/call_record/app/build/generated/whisper/whisper.cpp-1.9.5/src/CMakeLists.txt",
+    "/home/declan/Documents/Projects/Products/01_Persnal_Work/call_record/app/src/main/cpp/CMakeLists.txt"
+  ],
+  "cleanCommandsComponents": [
+    [
+      "/home/declan/Android/Sdk/cmake/3.22.1/bin/ninja",
+      "-C",
+      "/home/declan/Documents/Projects/Products/01_Persnal_Work/call_record/app/.cxx/RelWithDebInfo/4y6c116v/arm64-v8a",
+      "clean"
+    ]
+  ],
+  "buildTargetsCommandComponents": [
+    "/home/declan/Android/Sdk/cmake/3.22.1/bin/ninja",
+    "-C",
+    "/home/declan/Documents/Projects/Products/01_Persnal_Work/call_record/app/.cxx/RelWithDebInfo/4y6c116v/arm64-v8a",
+    "{LIST_OF_TARGETS_TO_BUILD}"
+  ],
+  "libraries": {
+    "callrecord_whisper::@6890427a1f51a3e7e1df": {
+      "toolchain": "toolchain",
+      "abi": "arm64-v8a",
+      "artifactName": "callrecord_whisper",
+      "output": "/home/declan/Documents/Projects/Products/01_Persnal_Work/call_record/app/build/intermediates/cxx/RelWithDebInfo/4y6c116v/obj/arm64-v8a/libcallrecord_whisper.so",
+      "runtimeFiles": []
+    },
+    "ggml::@fe13e92dabd0655ddef2": {
+      "toolchain": "toolchain",
+      "abi": "arm64-v8a",
+      "artifactName": "ggml",
+      "output": "/home/declan/Documents/Projects/Products/01_Persnal_Work/call_record/app/.cxx/RelWithDebInfo/4y6c116v/arm64-v8a/whisper-build/ggml/src/libggml.a"
+    },
+    "ggml-base::@fe13e92dabd0655ddef2": {
+      "toolchain": "toolchain",
+      "abi": "arm64-v8a",
+      "artifactName": "ggml-base",
+      "output": "/home/declan/Documents/Projects/Products/01_Persnal_Work/call_record/app/.cxx/RelWithDebInfo/4y6c116v/arm64-v8a/whisper-build/ggml/src/libggml-base.a"
+    },
+    "ggml-cpu::@fe13e92dabd0655ddef2": {
+      "toolchain": "toolchain",
+      "abi": "arm64-v8a",
+      "artifactName": "ggml-cpu",
+      "output": "/home/declan/Documents/Projects/Products/01_Persnal_Work/call_record/app/.cxx/RelWithDebInfo/4y6c116v/arm64-v8a/whisper-build/ggml/src/libggml-cpu.a"
+    },
+    "parakeet::@5c4c08eb26cb9fe5feee": {
+      "toolchain": "toolchain",
+      "abi": "arm64-v8a",
+      "artifactName": "parakeet",
+      "output": "/home/declan/Documents/Projects/Products/01_Persnal_Work/call_record/app/.cxx/RelWithDebInfo/4y6c116v/arm64-v8a/whisper-build/src/libparakeet.a"
+    },
+    "whisper::@5c4c08eb26cb9fe5feee": {
+      "toolchain": "toolchain",
+      "abi": "arm64-v8a",
+      "artifactName": "whisper",
+      "output": "/home/declan/Documents/Projects/Products/01_Persnal_Work/call_record/app/.cxx/RelWithDebInfo/4y6c116v/arm64-v8a/whisper-build/src/libwhisper.a"
+    }
+  },
+  "toolchains": {
+    "toolchain": {
+      "cCompilerExecutable": "/home/declan/Android/Sdk/ndk/27.2.12479018/toolchains/llvm/prebuilt/linux-x86_64/bin/clang.lld",
+      "cppCompilerExecutable": "/home/declan/Android/Sdk/ndk/27.2.12479018/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++.lld"
+    }
+  },
+  "cFileExtensions": [
+    "c"
+  ],
+  "cppFileExtensions": [
+    "cpp"
+  ]
+}

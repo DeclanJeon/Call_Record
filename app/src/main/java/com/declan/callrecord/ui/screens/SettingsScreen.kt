@@ -145,7 +145,9 @@ fun SettingsScreen(
 
     // Speech recognition model download.
     var modelDownloadProgress by remember { mutableStateOf<Int?>(null) }
-    var isModelReady by remember { mutableStateOf(TranscriptionService.isReady(context)) }
+    // Recomputed whenever a setting changes, so switching the engine updates the state at once.
+    val isModelReady = remember(updateTrigger) { TranscriptionService.isReady(context) }
+    val modelStatusText = remember(updateTrigger) { TranscriptionService.statusText(context) }
     val scope = rememberCoroutineScope()
 
     SettingsContent(
@@ -170,7 +172,6 @@ fun SettingsScreen(
             scope.launch {
                 val ok = TranscriptionService.ensureModel(context) { progress -> modelDownloadProgress = progress }
                 modelDownloadProgress = null
-                isModelReady = TranscriptionService.isReady(context)
                 if (!ok) {
                     // Keep the state simple: the button will show the download again.
                     modelDownloadProgress = null
@@ -179,6 +180,7 @@ fun SettingsScreen(
         },
         isModelReady = isModelReady,
         modelDownloadProgress = modelDownloadProgress,
+        modelStatusText = modelStatusText,
         modifier = modifier
     )
 }
@@ -215,6 +217,7 @@ fun SettingsContent(
     onDownloadModel: () -> Unit,
     isModelReady: Boolean,
     modelDownloadProgress: Int?,
+    modelStatusText: String,
     modifier: Modifier = Modifier
 ) {
     Surface(
@@ -258,7 +261,8 @@ fun SettingsContent(
                     onSelectDriveFolder = onSelectDriveFolder,
                     onDownloadModel = onDownloadModel,
                     isModelReady = isModelReady,
-                    modelDownloadProgress = modelDownloadProgress
+                    modelDownloadProgress = modelDownloadProgress,
+                    modelStatusText = modelStatusText
                 )
             }
             item { AudioSection(preferences, updateTrigger, actions) }
@@ -1307,6 +1311,8 @@ private fun SettingsScreenPreview() {
             override fun setRecordAllAppCallsEnabled(enabled: Boolean) {}
             override fun setRecordedAppPackages(packages: Set<String>) {}
             override fun setAppCallAudioSource(source: String) {}
+            override fun setTranscriptionEngine(engine: String) {}
+            override fun setWhisperModelId(modelId: String) {}
         }
 
         // File name template selection dialog
@@ -1327,7 +1333,8 @@ private fun SettingsScreenPreview() {
             onSelectDriveFolder = {},
             onDownloadModel = {},
             isModelReady = false,
-            modelDownloadProgress = null
+            modelDownloadProgress = null,
+            modelStatusText = "음성 인식 모델이 필요합니다"
         )
     }
 }

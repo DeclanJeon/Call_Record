@@ -390,3 +390,29 @@ Call_Record — 녹음 검증 리포트
 | 오디오 소스 | 통신사 통화는 `voice-call`(양방향), 앱 통화는 별도 소스: `mic-voice-communication`(기본) / `output`(REMOTE_SUBMIX, 스피커 출력) / `playback`(AudioPlaybackCapture) / `mic-voice-recognition` |
 | 현실적 한계 | 앱 통화는 통화 신호 경로(telephony call audio)를 쓰지 않으므로 **상대 음성 잡음은 기기·앱·통화 방식에 의존**. 스피커폰 통화 + `output` 소스가 가장 선명 |
 | 리포트 | `.txt`에 "양방향/단방향 추정" 대신 음성 구간 통계로 판정 — 앱 통화는 상대 음성이 약해 "음성 미검출"이 나올 수 있음(리포트에 경고 표기) |
+
+
+---
+
+## 15. v0.3.0 추가 기능 (Whisper 엔진 · 통화 요약)
+
+### 15.1 Whisper 전사 엔진
+| 항목 | 내용 |
+|---|---|
+| 구현 | `app/src/main/cpp/whisper_jni.cpp` (JNI) + `transcription/WhisperTranscriptionEngine.kt` |
+| whisper.cpp | v1.9.5 — 빌드 시 소스 tarball 다운로드 → SHA256 검증 → `app/build/generated/whisper/`에 추출 → NDK 27.2로 네이티브 컴파일 |
+| CMake | `app/src/main/cpp/CMakeLists.txt` — `GGML_OPENMP=OFF`, 테스트/예제 빌드 제외, `libcallrecord_whisper.so` 생성 |
+| 모델 | `ggml-base-q5_1`(60MB) / `ggml-small-q5_1`(190MB, 기본) / `ggml-small`(490MB) — HuggingFace 에서 1회 다운로드 |
+| 정확도 | Vosk 대비 한국어 정확도가 크게 향상, 문장 경계·타임스탬프 정확 → 요약 정확도에도 유리 |
+| 성능 | 기기 코어 수에 맞춰 2~6 스레드 사용. 1분 통화 기준 수십 초~수 분 |
+| 네이티브 사이즈 | arm64 1.6MB / armv7 1.3MB (+ libc++_shared) → APK 22.8MB → 28MB |
+| 안전 | JNI 모델 캐시는 경로별 1개, 모델 삭제 시 네이티브 해제 |
+
+### 15.2 통화 요약 (규칙 기반 온디바이스)
+| 항목 | 내용 |
+|---|---|
+| 인터페이스 | `summary/CallSummarizer` (향후 LLM 엔진 교체 지점) |
+| 구현 | `summary/RuleBasedCallSummarizer` — 문장 분할 → 점수(숫자/결정/요청/길이) → 핵심 문장 5개, 행동 표현 문장, 날짜·시간·금액 정규식 추출, 조사 제거 후 빈도 기반 키워드, 발화 시간 비율 |
+| 출력 | 리포트 `.txt`의 `[통화 요약]` 섹션 + `.json`의 `summary` 객체 |
+| 비용 | 모델·네트워크 0, 즉시 처리 (단위 테스트 5개로 검증) |
+| 한계 | 화자 구분 없음, 의도 기반 요약이 아니라 패턴 기반 — LLM 요약은 `CallSummarizer` 구현 추가로 교체 가능 |

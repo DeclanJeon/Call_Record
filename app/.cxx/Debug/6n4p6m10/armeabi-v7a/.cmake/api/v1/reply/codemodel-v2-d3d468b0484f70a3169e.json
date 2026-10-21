@@ -1,0 +1,220 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1
+					],
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-.-Debug-f5ebdc15457944623624.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.6.0"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0
+					]
+				},
+				{
+					"build" : "whisper-build",
+					"childIndexes" : 
+					[
+						2,
+						5
+					],
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-whisper-build-Debug-0e218050beb4d34bc1b6.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.5"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 1,
+					"source" : "/home/declan/Documents/Projects/Products/01_Persnal_Work/call_record/app/build/generated/whisper/whisper.cpp-1.9.5"
+				},
+				{
+					"build" : "whisper-build/ggml",
+					"childIndexes" : 
+					[
+						3
+					],
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-whisper-build.ggml-Debug-fbac153ae91180c9537f.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.14"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 2,
+					"source" : "/home/declan/Documents/Projects/Products/01_Persnal_Work/call_record/app/build/generated/whisper/whisper.cpp-1.9.5/ggml"
+				},
+				{
+					"build" : "whisper-build/ggml/src",
+					"childIndexes" : 
+					[
+						4
+					],
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-whisper-build.ggml.src-Debug-c99509efad720c884559.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.14"
+					},
+					"parentIndex" : 2,
+					"projectIndex" : 2,
+					"source" : "/home/declan/Documents/Projects/Products/01_Persnal_Work/call_record/app/build/generated/whisper/whisper.cpp-1.9.5/ggml/src",
+					"targetIndexes" : 
+					[
+						1,
+						2,
+						3
+					]
+				},
+				{
+					"build" : "whisper-build/ggml/src/ggml-cpu",
+					"jsonFile" : "directory-whisper-build.ggml.src.ggml-cpu-Debug-0a64f0fe6dc96f6f4974.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.14"
+					},
+					"parentIndex" : 3,
+					"projectIndex" : 2,
+					"source" : "/home/declan/Documents/Projects/Products/01_Persnal_Work/call_record/app/build/generated/whisper/whisper.cpp-1.9.5/ggml/src/ggml-cpu"
+				},
+				{
+					"build" : "whisper-build/src",
+					"jsonFile" : "directory-whisper-build.src-Debug-ea1c8a627b97efc3221f.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.5"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 1,
+					"source" : "/home/declan/Documents/Projects/Products/01_Persnal_Work/call_record/app/build/generated/whisper/whisper.cpp-1.9.5/src",
+					"targetIndexes" : 
+					[
+						4,
+						5
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"childIndexes" : 
+					[
+						1
+					],
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "callrecord_whisper",
+					"targetIndexes" : 
+					[
+						0
+					]
+				},
+				{
+					"childIndexes" : 
+					[
+						2
+					],
+					"directoryIndexes" : 
+					[
+						1,
+						5
+					],
+					"name" : "whisper.cpp",
+					"parentIndex" : 0,
+					"targetIndexes" : 
+					[
+						4,
+						5
+					]
+				},
+				{
+					"directoryIndexes" : 
+					[
+						2,
+						3,
+						4
+					],
+					"name" : "ggml",
+					"parentIndex" : 1,
+					"targetIndexes" : 
+					[
+						1,
+						2,
+						3
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "callrecord_whisper::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-callrecord_whisper-Debug-89029284912498e6cf8b.json",
+					"name" : "callrecord_whisper",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 3,
+					"id" : "ggml::@fe13e92dabd0655ddef2",
+					"jsonFile" : "target-ggml-Debug-a589781dd85b63a07b40.json",
+					"name" : "ggml",
+					"projectIndex" : 2
+				},
+				{
+					"directoryIndex" : 3,
+					"id" : "ggml-base::@fe13e92dabd0655ddef2",
+					"jsonFile" : "target-ggml-base-Debug-762c16c8af6e56eaa2fa.json",
+					"name" : "ggml-base",
+					"projectIndex" : 2
+				},
+				{
+					"directoryIndex" : 3,
+					"id" : "ggml-cpu::@fe13e92dabd0655ddef2",
+					"jsonFile" : "target-ggml-cpu-Debug-dab59a5b8423ce0cd0b1.json",
+					"name" : "ggml-cpu",
+					"projectIndex" : 2
+				},
+				{
+					"directoryIndex" : 5,
+					"id" : "parakeet::@5c4c08eb26cb9fe5feee",
+					"jsonFile" : "target-parakeet-Debug-a10fc3b4d59a7c0fcf79.json",
+					"name" : "parakeet",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 5,
+					"id" : "whisper::@5c4c08eb26cb9fe5feee",
+					"jsonFile" : "target-whisper-Debug-188ce5b56184ed284c9a.json",
+					"name" : "whisper",
+					"projectIndex" : 1
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/home/declan/Documents/Projects/Products/01_Persnal_Work/call_record/app/.cxx/Debug/6n4p6m10/armeabi-v7a",
+		"source" : "/home/declan/Documents/Projects/Products/01_Persnal_Work/call_record/app/src/main/cpp"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 3
+	}
+}

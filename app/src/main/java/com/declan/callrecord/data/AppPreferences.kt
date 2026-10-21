@@ -67,6 +67,12 @@ class AppPreferences(context: Context) {
         /** The kind of tone that is played. */
         const val ANNOUNCEMENT_TONE_TYPE = "short"
 
+        // --- Call_Record: transcription engines ---
+        /** The speech to text engine: "vosk" (fast) or "whisper" (accurate). */
+        const val TRANSCRIPTION_ENGINE = "vosk"
+        /** The whisper.cpp model that is used. */
+        const val WHISPER_MODEL_ID = "small-q5_1"
+
         // --- Call_Record: verification & transcription ---
         /** Automatically write the .txt/.json verification report after every recording. */
         const val VERIFICATION_REPORT_ENABLED = true
@@ -136,6 +142,8 @@ class AppPreferences(context: Context) {
         APP_CALL_AUDIO_SOURCE("app_call_audio_source"),
         ANNOUNCEMENT_TONE_ENABLED("announcement_tone_enabled"),
         ANNOUNCEMENT_TONE_TYPE("announcement_tone_type"),
+        TRANSCRIPTION_ENGINE("transcription_engine"),
+        WHISPER_MODEL_ID("whisper_model_id"),
         CALL_RECORD_MIGRATED("call_record_migrated_v1"),
         AUTO_RECORD_INCOMING("auto_record_incoming"),
         AUTO_RECORD_OUTGOING("auto_record_outgoing"),
@@ -287,6 +295,18 @@ class AppPreferences(context: Context) {
     fun isVerificationReportEnabled() = getBoolean(Key.VERIFICATION_REPORT_ENABLED, DefaultsValue.VERIFICATION_REPORT_ENABLED)
 
     fun setVerificationReportEnabled(enabled: Boolean) = setBoolean(Key.VERIFICATION_REPORT_ENABLED, enabled)
+
+    // --- Call_Record: transcription engines ---
+
+    /** The selected speech to text engine: "vosk" or "whisper". */
+    fun getTranscriptionEngine(): String = getString(Key.TRANSCRIPTION_ENGINE, DefaultsValue.TRANSCRIPTION_ENGINE) ?: DefaultsValue.TRANSCRIPTION_ENGINE
+
+    fun setTranscriptionEngine(engine: String) = setString(Key.TRANSCRIPTION_ENGINE, engine)
+
+    /** The whisper.cpp model that is used for the transcription. */
+    fun getWhisperModelId(): String = getString(Key.WHISPER_MODEL_ID, DefaultsValue.WHISPER_MODEL_ID) ?: DefaultsValue.WHISPER_MODEL_ID
+
+    fun setWhisperModelId(modelId: String) = setString(Key.WHISPER_MODEL_ID, modelId)
 
     /** True when the recording should be transcribed with the on-device engine. */
     fun isTranscriptionEnabled() = getBoolean(Key.TRANSCRIPTION_ENABLED, DefaultsValue.TRANSCRIPTION_ENABLED)

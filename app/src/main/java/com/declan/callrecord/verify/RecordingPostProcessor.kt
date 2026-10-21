@@ -15,6 +15,8 @@ import androidx.documentfile.provider.DocumentFile
 import com.declan.callrecord.backup.DriveBackup
 import com.declan.callrecord.data.AppPreferences
 import com.declan.callrecord.data.call.EnrichedCallData
+import com.declan.callrecord.summary.CallSummarizer
+import com.declan.callrecord.summary.RuleBasedCallSummarizer
 import com.declan.callrecord.utils.AppLogger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -46,6 +48,7 @@ data class PostProcessResult(
     val reportUri: Uri? = null,
     val analysis: AudioAnalysis? = null,
     val transcript: Transcript? = null,
+    val summary: com.declan.callrecord.summary.CallSummary? = null,
     val backedUpToDrive: Boolean = false,
     val error: String? = null
 )
@@ -78,7 +81,8 @@ class RecordingPostProcessor(private val context: Context) {
         metadata: EnrichedCallData? = null,
         callDurationMs: Long? = null,
         transcriptProvider: TranscriptProvider? = null,
-        language: String = "ko"
+        language: String = "ko",
+        summarizer: CallSummarizer? = RuleBasedCallSummarizer()
     ): PostProcessResult = withContext(Dispatchers.IO) {
         try {
             val preferences = AppPreferences(context)
@@ -97,6 +101,12 @@ class RecordingPostProcessor(private val context: Context) {
                 transcript = runCatching { transcriptProvider.transcribe(pcm, language) {} }.getOrNull()
             }
 
+            // The summary is built from the transcript when there is one, otherwise from the
+            // analysis alone so that the report still contains the basic call statistics.
+            val summary = runCatching {
+                summarizer?.summarize(transcript ?: Transcript(), analysis ?: AudioAnalysis())
+            }.getOrNull()
+
             val recordingName = recordingFile.name ?: "recording"
             val baseName = recordingName.substringBeforeLast('.', recordingName)
 
@@ -110,7 +120,8 @@ class RecordingPostProcessor(private val context: Context) {
                 direction = metadata?.direction?.name?.lowercase(),
                 phoneNumber = metadata?.getBestNumber()?.takeIf { it.isNotBlank() },
                 callDurationMs = callDurationMs,
-                transcript = transcript?.text
+                transcript = transcript?.text,
+                summary = summary
             )
 
             val reportUri = ReportWriter.write(context, parent, baseName, report)
@@ -137,6 +148,7 @@ class RecordingPostProcessor(private val context: Context) {
                 reportUri = reportUri,
                 analysis = analysis,
                 transcript = transcript,
+                summary = summary,
                 backedUpToDrive = backedUp
             )
         } catch (e: Exception) {

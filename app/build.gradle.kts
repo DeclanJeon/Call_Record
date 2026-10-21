@@ -26,6 +26,15 @@ val scrcpyDownloadDir = layout.buildDirectory.dir("generated/scrcpy/assets")
 val scrcpyServerAssetFile = scrcpyDownloadDir.map { it.file(scrcpyServerAssetName) }
 val libphonenumberMetadataDir = layout.buildDirectory.dir("generated/libphonenumber/assets")
 
+// Call_Record: whisper.cpp (on-device speech to text) source, downloaded and verified at build time.
+val whisperVersion = "1.9.5"
+val whisperSourceUrl = "https://github.com/ggml-org/whisper.cpp/archive/refs/tags/v$whisperVersion.tar.gz"
+val whisperSourceSha256 = "ff1a9053feb509ff9d7729703355541ae9690073a6b1c40eb692c962e0dc1720"
+val whisperSourceArchiveName = "whisper.cpp-$whisperVersion.tar.gz"
+val whisperDownloadDir = layout.buildDirectory.dir("generated/whisper")
+val whisperSourceArchiveFile = whisperDownloadDir.map { it.file(whisperSourceArchiveName) }
+val whisperSourceDir = whisperDownloadDir.map { it.file("whisper.cpp-$whisperVersion") }
+
 // Detect if we're running in a CI environment (e.g., GitHub Actions).
 val isEnvironmentGithubCI = providers.environmentVariable("GITHUB_ACTIONS").isPresent
 
@@ -113,6 +122,31 @@ val extractLibphonenumberMetadata = tasks.register<ExtractMetadataTask>("extract
     into(outputDir)
 }
 
+// Downloads the whisper.cpp source archive and extracts it for the native build.
+val downloadWhisperSource by tasks.registering(DownloadAssetTask::class) {
+    group = "build setup"
+    description = "Downloads the whisper.cpp sources (used by the on-device transcription engine)"
+    url.set(whisperSourceUrl)
+    sha256.set(whisperSourceSha256)
+    assetName.set(whisperSourceArchiveName)
+    outputDir.set(whisperDownloadDir)
+}
+
+// Extracts the downloaded archive into the folder the CMake build points at.
+val extractWhisperSource by tasks.registering(Copy::class) {
+    group = "build setup"
+    description = "Extracts the whisper.cpp sources"
+    from(tarTree(whisperSourceArchiveFile))
+    into(whisperDownloadDir)
+    dependsOn(downloadWhisperSource)
+}
+
+// The native build needs the whisper.cpp sources, so every CMake task waits for the extraction.
+tasks.matching { it.name.contains("configureCMake", ignoreCase = true) || it.name.contains("buildCMake", ignoreCase = true) }
+    .configureEach {
+        dependsOn(extractWhisperSource)
+    }
+
 tasks.register("writeVersionForCi") {
     // Define the output file path (e.g., app/build/outputs/version.txt)
     val outputFile = layout.buildDirectory.file("outputs/version.txt")
@@ -129,6 +163,15 @@ tasks.register("writeVersionForCi") {
 android {
     namespace = "com.declan.callrecord"
     compileSdk = 36
+    // Call_Record: whisper.cpp is compiled with the NDK.
+    ndkVersion = "27.2.12479018"
+
+    externalNativeBuild {
+        cmake {
+            path = file("src/main/cpp/CMakeLists.txt")
+            version = "3.22.1"
+        }
+    }
 
     defaultConfig {
         applicationId = "com.declan.callrecord"
@@ -146,6 +189,15 @@ android {
         // (the Vosk native library alone is ~9 MB per ABI).
         ndk {
             abiFilters += listOf("arm64-v8a", "armeabi-v7a")
+        }
+
+        externalNativeBuild {
+            cmake {
+                arguments += listOf(
+                    "-DWHISPER_SOURCE_DIR=${whisperSourceDir.get().asFile.absolutePath}",
+                    "-DANDROID_STL=c++_shared"
+                )
+            }
         }
     }
     // Call_Record: the signing key and its passwords are never part of the repository.
@@ -295,4 +347,7 @@ dependencies {
 
     // Call_Record: on-device speech to text (Vosk)
     implementation(libs.vosk.android)
+
+    // Unit tests
+    testImplementation("junit:junit:4.13.2")
 }

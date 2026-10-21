@@ -1,0 +1,6 @@
+/home/declan/Documents/Projects/Products/01_Persnal_Work/call_record/app/build/generated/whisper/whisper.cpp-1.9.5/CMakeLists.txt
+/home/declan/Documents/Projects/Products/01_Persnal_Work/call_record/app/build/generated/whisper/whisper.cpp-1.9.5/ggml/CMakeLists.txt
+/home/declan/Documents/Projects/Products/01_Persnal_Work/call_record/app/build/generated/whisper/whisper.cpp-1.9.5/ggml/src/CMakeLists.txt
+/home/declan/Documents/Projects/Products/01_Persnal_Work/call_record/app/build/generated/whisper/whisper.cpp-1.9.5/ggml/src/ggml-cpu/CMakeLists.txt
+/home/declan/Documents/Projects/Products/01_Persnal_Work/call_record/app/build/generated/whisper/whisper.cpp-1.9.5/src/CMakeLists.txt
+/home/declan/Documents/Projects/Products/01_Persnal_Work/call_record/app/src/main/cpp/CMakeLists.txt

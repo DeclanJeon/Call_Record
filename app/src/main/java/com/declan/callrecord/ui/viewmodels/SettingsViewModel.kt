@@ -87,6 +87,8 @@ interface SettingsActions {
     fun setRecordAllAppCallsEnabled(enabled: Boolean)
     fun setRecordedAppPackages(packages: Set<String>)
     fun setAppCallAudioSource(source: String)
+    fun setTranscriptionEngine(engine: String)
+    fun setWhisperModelId(modelId: String)
     fun setTranscriptionEnabled(enabled: Boolean)
     fun setDriveBackupEnabled(enabled: Boolean)
     fun setDriveBackupFolderUri(uri: android.net.Uri?)
@@ -472,6 +474,16 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
 
     override fun setAppCallAudioSource(source: String) {
         preferences.setAppCallAudioSource(source)
+        refresh()
+    }
+
+    override fun setTranscriptionEngine(engine: String) {
+        preferences.setTranscriptionEngine(engine)
+        refresh()
+    }
+
+    override fun setWhisperModelId(modelId: String) {
+        preferences.setWhisperModelId(modelId)
         refresh()
     }
 

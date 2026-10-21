@@ -31,6 +31,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -43,6 +44,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -66,6 +68,7 @@ fun RecordingsScreen(
     val viewModel: RecordingsViewModel = viewModel()
     val state by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
 
     LaunchedEffect(Unit) { viewModel.refresh() }
 
@@ -128,7 +131,8 @@ fun RecordingsScreen(
                     isAudio = item.isAudio,
                     isBusy = state.busyUri == item.uri,
                     onVerify = { viewModel.verify(item) },
-                    onTranscribe = { viewModel.transcribe(item) }
+                    onTranscribe = { viewModel.transcribe(item) },
+                    onOpen = { openFile(context, item.uri) }
                 )
             }
         }
@@ -146,7 +150,8 @@ private fun RecordingRow(
     isAudio: Boolean,
     isBusy: Boolean,
     onVerify: () -> Unit,
-    onTranscribe: () -> Unit
+    onTranscribe: () -> Unit,
+    onOpen: () -> Unit
 ) {
     val dateFormat = remember { SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()) }
     Column(
@@ -188,7 +193,31 @@ private fun RecordingRow(
                     Text("내용 전사")
                 }
             }
+        } else {
+            Row(
+                modifier = Modifier.padding(top = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                OutlinedButton(onClick = onOpen, enabled = !isBusy) {
+                    Icon(Icons.Filled.Article, contentDescription = null)
+                    Spacer(Modifier.height(8.dp))
+                    Text(if (name.endsWith(".srt", true)) "자막 열기" else "리포트 열기")
+                }
+            }
         }
+    }
+}
+
+/**
+ * Opens the given file with the app that can handle it.
+ */
+private fun openFile(context: android.content.Context, uri: android.net.Uri) {
+    runCatching {
+        val intent = android.content.Intent(android.content.Intent.ACTION_VIEW).apply {
+            setDataAndType(uri, null)
+            addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        context.startActivity(intent)
     }
 }
 

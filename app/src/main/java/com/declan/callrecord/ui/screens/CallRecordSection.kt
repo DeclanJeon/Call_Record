@@ -32,6 +32,8 @@ import androidx.compose.ui.unit.dp
 import com.declan.callrecord.data.AppPreferences
 import com.declan.callrecord.data.CallAppRegistry
 import com.declan.callrecord.notify.AnnouncementTone
+import com.declan.callrecord.transcription.TranscriptionService
+import com.declan.callrecord.transcription.WhisperModelManager
 import com.declan.callrecord.ui.common.M3DropdownField
 import com.declan.callrecord.ui.common.OptionItem
 import com.declan.callrecord.ui.common.ToggleListItem
@@ -65,6 +67,7 @@ fun CallRecordSection(
     onDownloadModel: () -> Unit,
     isModelReady: Boolean,
     modelDownloadProgress: Int?,
+    modelStatusText: String,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
@@ -218,6 +221,32 @@ fun CallRecordSection(
             onCheckedChange = { actions.setTranscriptionEnabled(it) }
         )
 
+        // ── 전사 엔진 선택 ──────────────────────────────────────
+        val engineOptions = listOf(
+            OptionItem(TranscriptionService.ENGINE_VOSK, "Vosk (가벼움, 빠름)", "작은 한국어 모델, 약 40MB"),
+            OptionItem(TranscriptionService.ENGINE_WHISPER, "Whisper (정확함)", "whisper.cpp 기반, 한국어 정확도가 훨씬 높음")
+        )
+        val selectedEngine = engineOptions.firstOrNull { it.key == preferences.getTranscriptionEngine() } ?: engineOptions.first()
+        M3DropdownField(
+            label = "전사 엔진",
+            selected = selectedEngine,
+            options = engineOptions,
+            onOptionSelected = { actions.setTranscriptionEngine(it.key) }
+        )
+
+        if (selectedEngine.key == TranscriptionService.ENGINE_WHISPER) {
+            val modelOptions = WhisperModelManager.MODELS.map {
+                OptionItem(it.id, it.description, "${it.fileName} · ${it.formattedSize}")
+            }
+            val selectedModel = modelOptions.firstOrNull { it.key == preferences.getWhisperModelId() } ?: modelOptions.first()
+            M3DropdownField(
+                label = "Whisper 모델",
+                selected = selectedModel,
+                options = modelOptions,
+                onOptionSelected = { actions.setWhisperModelId(it.key) }
+            )
+        }
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -228,15 +257,15 @@ fun CallRecordSection(
                 if (modelDownloadProgress != null) {
                     Text("내려받는 중 $modelDownloadProgress%")
                 } else {
-                    Text(if (isModelReady) "음성 인식 모델 다시 받기" else "음성 인식 모델 받기 (약 40MB)")
+                    Text(if (isModelReady) "모델 다시 받기" else "음성 인식 모델 받기")
                 }
             }
         }
         Text(
-            text = if (isModelReady) {
-                "음성 인식 모델이 설치되어 있습니다. 통화 내용은 기기 안에서만 처리됩니다."
+            text = modelStatusText + if (isModelReady) {
+                " · 통화 내용은 기기 안에서만 처리됩니다."
             } else {
-                "모델이 없어도 녹음과 검증 리포트는 정상 동작합니다."
+                " · 모델이 없어도 녹음과 검증 리포트는 정상 동작합니다."
             },
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant

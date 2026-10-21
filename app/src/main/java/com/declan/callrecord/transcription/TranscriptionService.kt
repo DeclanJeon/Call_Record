@@ -10,6 +10,7 @@
 package com.declan.callrecord.transcription
 
 import android.content.Context
+import com.declan.callrecord.data.AppPreferences
 import com.declan.callrecord.utils.AppLogger
 import com.declan.callrecord.verify.PcmAudio
 import com.declan.callrecord.verify.TranscriptProvider
@@ -19,26 +20,83 @@ import com.declan.callrecord.verify.TranscriptProvider
  */
 object TranscriptionService {
 
-    /** The engine used by Call_Record. */
-    fun engine(context: Context): TranscriptionEngine? {
-        val modelDirectory = ModelManager.modelDirectory(context) ?: return null
-        return VoskTranscriptionEngine(context, modelDirectory)
-    }
+    /** The lightweight engine (small Korean model, fast). */
+    const val ENGINE_VOSK = "vosk"
 
-    /** True when a model is installed and the engine can run. */
-    fun isReady(context: Context): Boolean = ModelManager.isModelReady(context)
+    /** The accurate engine (whisper.cpp, larger model). */
+    const val ENGINE_WHISPER = "whisper"
 
     /**
-     * Downloads the speech recognition model if it is not present yet.
+     * The engine that the user selected, or null when it is not ready.
      */
-    suspend fun ensureModel(context: Context, onProgress: (Int) -> Unit = {}): Boolean {
-        val result = ModelManager.ensureModel(context, onProgress)
-        if (result) AppLogger.i( "Speech recognition model is ready" )
-        return result
+    fun engine(context: Context): TranscriptionEngine? {
+        val preferences = AppPreferences(context)
+        return when (preferences.getTranscriptionEngine()) {
+            ENGINE_WHISPER -> {
+                val model = WhisperModelManager.modelById(preferences.getWhisperModelId())
+                WhisperModelManager.modelFile(context, model)?.let { WhisperTranscriptionEngine(context, it) }
+            }
+
+            else -> {
+                val modelDirectory = ModelManager.modelDirectory(context) ?: return null
+                VoskTranscriptionEngine(context, modelDirectory)
+            }
+        }
     }
 
-    /** Removes the speech recognition model. */
-    suspend fun deleteModel(context: Context): Boolean = ModelManager.deleteModel(context)
+    /**
+     * True when the selected engine has everything it needs to run.
+     */
+    fun isReady(context: Context): Boolean = engine(context) != null
+
+    /**
+     * A short description of the state of the selected engine, for the settings screen.
+     */
+    fun statusText(context: Context): String {
+        val preferences = AppPreferences(context)
+        return when (preferences.getTranscriptionEngine()) {
+            ENGINE_WHISPER -> {
+                val model = WhisperModelManager.modelById(preferences.getWhisperModelId())
+                if (WhisperModelManager.isModelReady(context, model)) {
+                    "Whisper 모델 설치됨 (${model.fileName}, ${model.formattedSize})"
+                } else {
+                    "Whisper 모델이 필요합니다 (${model.formattedSize})"
+                }
+            }
+
+            else -> if (ModelManager.isModelReady(context)) {
+                "Vosk 모델 설치됨 (${ModelManager.MODEL_ID})"
+            } else {
+                "음성 인식 모델이 필요합니다 (약 40MB)"
+            }
+        }
+    }
+
+    /**
+     * Downloads the model of the selected engine if it is not present yet.
+     */
+    suspend fun ensureModel(context: Context, onProgress: (Int) -> Unit = {}): Boolean {
+        val preferences = AppPreferences(context)
+        return if (preferences.getTranscriptionEngine() == ENGINE_WHISPER) {
+            val model = WhisperModelManager.modelById(preferences.getWhisperModelId())
+            WhisperModelManager.ensureModel(context, model, onProgress)
+        } else {
+            ModelManager.ensureModel(context, onProgress)
+        }
+    }
+
+    /**
+     * Removes the model of the selected engine.
+     */
+    suspend fun deleteModel(context: Context): Boolean {
+        val preferences = AppPreferences(context)
+        return if (preferences.getTranscriptionEngine() == ENGINE_WHISPER) {
+            val model = WhisperModelManager.modelById(preferences.getWhisperModelId())
+            WhisperModelManager.deleteModel(context, model)
+        } else {
+            ModelManager.deleteModel(context)
+        }
+    }
 
     /**
      * Returns a provider that transcribes a recording, or null when no model is installed.

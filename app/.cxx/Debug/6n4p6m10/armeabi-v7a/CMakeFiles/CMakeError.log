@@ -1,0 +1,175 @@
+Checking whether the ASM compiler is GNU using "--version" did not match "(GNU assembler)|(GCC)|(Free Software Foundation)":
+Android (12470979, +pgo, +bolt, +lto, +mlgo, based on r522817c) clang version 18.0.3 (https://android.googlesource.com/toolchain/llvm-project d8003a456d14a3deb8054cdaa529ffbf02d9b262)
+Target: x86_64-unknown-linux-gnu
+Thread model: posix
+InstalledDir: /home/declan/Android/Sdk/ndk/27.2.12479018/toolchains/llvm/prebuilt/linux-x86_64/bin
+Performing C SOURCE FILE Test CMAKE_HAVE_LIBC_PTHREAD failed with the following output:
+Change Dir: /home/declan/Documents/Projects/Products/01_Persnal_Work/call_record/app/.cxx/Debug/6n4p6m10/armeabi-v7a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/declan/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_0483c && [1/2] Building C object CMakeFiles/cmTC_0483c.dir/src.c.o
+FAILED: CMakeFiles/cmTC_0483c.dir/src.c.o 
+/home/declan/Android/Sdk/ndk/27.2.12479018/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=armv7-none-linux-androideabi30 --sysroot=/home/declan/Android/Sdk/ndk/27.2.12479018/toolchains/llvm/prebuilt/linux-x86_64/sysroot -DCMAKE_HAVE_LIBC_PTHREAD  -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -march=armv7-a -mthumb -Wformat -Werror=format-security   -fPIE -std=gnu11 -MD -MT CMakeFiles/cmTC_0483c.dir/src.c.o -MF CMakeFiles/cmTC_0483c.dir/src.c.o.d -o CMakeFiles/cmTC_0483c.dir/src.c.o -c /home/declan/Documents/Projects/Products/01_Persnal_Work/call_record/app/.cxx/Debug/6n4p6m10/armeabi-v7a/CMakeFiles/CMakeTmp/src.c
+/home/declan/Documents/Projects/Products/01_Persnal_Work/call_record/app/.cxx/Debug/6n4p6m10/armeabi-v7a/CMakeFiles/CMakeTmp/src.c:13:3: error: call to undeclared function 'pthread_cancel'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+   13 |   pthread_cancel(thread);
+      |   ^
+/home/declan/Documents/Projects/Products/01_Persnal_Work/call_record/app/.cxx/Debug/6n4p6m10/armeabi-v7a/CMakeFiles/CMakeTmp/src.c:13:3: note: did you mean 'pthread_once'?
+/home/declan/Android/Sdk/ndk/27.2.12479018/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/pthread.h:264:5: note: 'pthread_once' declared here
+  264 | int pthread_once(pthread_once_t* _Nonnull __once, void (* _Nonnull __init_routine)(void));
+      |     ^
+1 error generated.
+ninja: build stopped: subcommand failed.
+
+
+Source file was:
+#include <pthread.h>
+
+static void* test_func(void* data)
+{
+  return data;
+}
+
+int main(void)
+{
+  pthread_t thread;
+  pthread_create(&thread, NULL, test_func, NULL);
+  pthread_detach(thread);
+  pthread_cancel(thread);
+  pthread_join(thread, NULL);
+  pthread_atfork(NULL, NULL, NULL);
+  pthread_exit(NULL);
+
+  return 0;
+}
+
+Performing C++ SOURCE FILE Test GGML_COMPILER_SUPPORTS_FP16_FORMAT_I3E failed with the following output:
+Change Dir: /home/declan/Documents/Projects/Products/01_Persnal_Work/call_record/app/.cxx/Debug/6n4p6m10/armeabi-v7a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/declan/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_59a57 && [1/2] Building CXX object CMakeFiles/cmTC_59a57.dir/src.cxx.o
+FAILED: CMakeFiles/cmTC_59a57.dir/src.cxx.o 
+/home/declan/Android/Sdk/ndk/27.2.12479018/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++ --target=armv7-none-linux-androideabi30 --sysroot=/home/declan/Android/Sdk/ndk/27.2.12479018/toolchains/llvm/prebuilt/linux-x86_64/sysroot -DGGML_COMPILER_SUPPORTS_FP16_FORMAT_I3E  -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -march=armv7-a -mthumb -Wformat -Werror=format-security    -fPIE   -mfp16-format=ieee -std=gnu++17 -MD -MT CMakeFiles/cmTC_59a57.dir/src.cxx.o -MF CMakeFiles/cmTC_59a57.dir/src.cxx.o.d -o CMakeFiles/cmTC_59a57.dir/src.cxx.o -c /home/declan/Documents/Projects/Products/01_Persnal_Work/call_record/app/.cxx/Debug/6n4p6m10/armeabi-v7a/CMakeFiles/CMakeTmp/src.cxx
+clang++: error: unknown argument: '-mfp16-format=ieee'
+ninja: build stopped: subcommand failed.
+
+
+Source file was:
+int main() { return 0; }
+Performing C++ SOURCE FILE Test HAVE_DOTPROD failed with the following output:
+Change Dir: /home/declan/Documents/Projects/Products/01_Persnal_Work/call_record/app/.cxx/Debug/6n4p6m10/armeabi-v7a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/declan/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_7f05e && [1/2] Building CXX object CMakeFiles/cmTC_7f05e.dir/src.cxx.o
+FAILED: CMakeFiles/cmTC_7f05e.dir/src.cxx.o 
+/home/declan/Android/Sdk/ndk/27.2.12479018/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++ --target=armv7-none-linux-androideabi30 --sysroot=/home/declan/Android/Sdk/ndk/27.2.12479018/toolchains/llvm/prebuilt/linux-x86_64/sysroot -DHAVE_DOTPROD  -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -march=armv7-a -mthumb -Wformat -Werror=format-security    -fPIE -std=gnu++17 -MD -MT CMakeFiles/cmTC_7f05e.dir/src.cxx.o -MF CMakeFiles/cmTC_7f05e.dir/src.cxx.o.d -o CMakeFiles/cmTC_7f05e.dir/src.cxx.o -c /home/declan/Documents/Projects/Products/01_Persnal_Work/call_record/app/.cxx/Debug/6n4p6m10/armeabi-v7a/CMakeFiles/CMakeTmp/src.cxx
+/home/declan/Documents/Projects/Products/01_Persnal_Work/call_record/app/.cxx/Debug/6n4p6m10/armeabi-v7a/CMakeFiles/CMakeTmp/src.cxx:3:24: error: "Feature DOTPROD is not defined"
+    3 |                     #  error "Feature DOTPROD is not defined"
+      |                        ^
+1 error generated.
+ninja: build stopped: subcommand failed.
+
+
+Source file was:
+
+                    #if !defined(__ARM_FEATURE_DOTPROD)
+                    #  error "Feature DOTPROD is not defined"
+                    #endif
+                    int main() { return 0; }
+                    
+Performing C++ SOURCE FILE Test HAVE_SVE failed with the following output:
+Change Dir: /home/declan/Documents/Projects/Products/01_Persnal_Work/call_record/app/.cxx/Debug/6n4p6m10/armeabi-v7a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/declan/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_832f8 && [1/2] Building CXX object CMakeFiles/cmTC_832f8.dir/src.cxx.o
+FAILED: CMakeFiles/cmTC_832f8.dir/src.cxx.o 
+/home/declan/Android/Sdk/ndk/27.2.12479018/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++ --target=armv7-none-linux-androideabi30 --sysroot=/home/declan/Android/Sdk/ndk/27.2.12479018/toolchains/llvm/prebuilt/linux-x86_64/sysroot -DHAVE_SVE  -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -march=armv7-a -mthumb -Wformat -Werror=format-security    -fPIE -std=gnu++17 -MD -MT CMakeFiles/cmTC_832f8.dir/src.cxx.o -MF CMakeFiles/cmTC_832f8.dir/src.cxx.o.d -o CMakeFiles/cmTC_832f8.dir/src.cxx.o -c /home/declan/Documents/Projects/Products/01_Persnal_Work/call_record/app/.cxx/Debug/6n4p6m10/armeabi-v7a/CMakeFiles/CMakeTmp/src.cxx
+/home/declan/Documents/Projects/Products/01_Persnal_Work/call_record/app/.cxx/Debug/6n4p6m10/armeabi-v7a/CMakeFiles/CMakeTmp/src.cxx:3:24: error: "Feature SVE is not defined"
+    3 |                     #  error "Feature SVE is not defined"
+      |                        ^
+1 error generated.
+ninja: build stopped: subcommand failed.
+
+
+Source file was:
+
+                    #if !defined(__ARM_FEATURE_SVE)
+                    #  error "Feature SVE is not defined"
+                    #endif
+                    int main() { return 0; }
+                    
+Performing C++ SOURCE FILE Test HAVE_MATMUL_INT8 failed with the following output:
+Change Dir: /home/declan/Documents/Projects/Products/01_Persnal_Work/call_record/app/.cxx/Debug/6n4p6m10/armeabi-v7a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/declan/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_cec23 && [1/2] Building CXX object CMakeFiles/cmTC_cec23.dir/src.cxx.o
+FAILED: CMakeFiles/cmTC_cec23.dir/src.cxx.o 
+/home/declan/Android/Sdk/ndk/27.2.12479018/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++ --target=armv7-none-linux-androideabi30 --sysroot=/home/declan/Android/Sdk/ndk/27.2.12479018/toolchains/llvm/prebuilt/linux-x86_64/sysroot -DHAVE_MATMUL_INT8  -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -march=armv7-a -mthumb -Wformat -Werror=format-security    -fPIE -std=gnu++17 -MD -MT CMakeFiles/cmTC_cec23.dir/src.cxx.o -MF CMakeFiles/cmTC_cec23.dir/src.cxx.o.d -o CMakeFiles/cmTC_cec23.dir/src.cxx.o -c /home/declan/Documents/Projects/Products/01_Persnal_Work/call_record/app/.cxx/Debug/6n4p6m10/armeabi-v7a/CMakeFiles/CMakeTmp/src.cxx
+/home/declan/Documents/Projects/Products/01_Persnal_Work/call_record/app/.cxx/Debug/6n4p6m10/armeabi-v7a/CMakeFiles/CMakeTmp/src.cxx:3:24: error: "Feature MATMUL_INT8 is not defined"
+    3 |                     #  error "Feature MATMUL_INT8 is not defined"
+      |                        ^
+1 error generated.
+ninja: build stopped: subcommand failed.
+
+
+Source file was:
+
+                    #if !defined(__ARM_FEATURE_MATMUL_INT8)
+                    #  error "Feature MATMUL_INT8 is not defined"
+                    #endif
+                    int main() { return 0; }
+                    
+Performing C++ SOURCE FILE Test HAVE_FMA failed with the following output:
+Change Dir: /home/declan/Documents/Projects/Products/01_Persnal_Work/call_record/app/.cxx/Debug/6n4p6m10/armeabi-v7a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/declan/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_608ea && [1/2] Building CXX object CMakeFiles/cmTC_608ea.dir/src.cxx.o
+FAILED: CMakeFiles/cmTC_608ea.dir/src.cxx.o 
+/home/declan/Android/Sdk/ndk/27.2.12479018/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++ --target=armv7-none-linux-androideabi30 --sysroot=/home/declan/Android/Sdk/ndk/27.2.12479018/toolchains/llvm/prebuilt/linux-x86_64/sysroot -DHAVE_FMA  -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -march=armv7-a -mthumb -Wformat -Werror=format-security    -fPIE -std=gnu++17 -MD -MT CMakeFiles/cmTC_608ea.dir/src.cxx.o -MF CMakeFiles/cmTC_608ea.dir/src.cxx.o.d -o CMakeFiles/cmTC_608ea.dir/src.cxx.o -c /home/declan/Documents/Projects/Products/01_Persnal_Work/call_record/app/.cxx/Debug/6n4p6m10/armeabi-v7a/CMakeFiles/CMakeTmp/src.cxx
+/home/declan/Documents/Projects/Products/01_Persnal_Work/call_record/app/.cxx/Debug/6n4p6m10/armeabi-v7a/CMakeFiles/CMakeTmp/src.cxx:3:24: error: "Feature FMA is not defined"
+    3 |                     #  error "Feature FMA is not defined"
+      |                        ^
+1 error generated.
+ninja: build stopped: subcommand failed.
+
+
+Source file was:
+
+                    #if !defined(__ARM_FEATURE_FMA)
+                    #  error "Feature FMA is not defined"
+                    #endif
+                    int main() { return 0; }
+                    
+Performing C++ SOURCE FILE Test HAVE_FP16_VECTOR_ARITHMETIC failed with the following output:
+Change Dir: /home/declan/Documents/Projects/Products/01_Persnal_Work/call_record/app/.cxx/Debug/6n4p6m10/armeabi-v7a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/declan/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_6ab19 && [1/2] Building CXX object CMakeFiles/cmTC_6ab19.dir/src.cxx.o
+FAILED: CMakeFiles/cmTC_6ab19.dir/src.cxx.o 
+/home/declan/Android/Sdk/ndk/27.2.12479018/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++ --target=armv7-none-linux-androideabi30 --sysroot=/home/declan/Android/Sdk/ndk/27.2.12479018/toolchains/llvm/prebuilt/linux-x86_64/sysroot -DHAVE_FP16_VECTOR_ARITHMETIC  -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -march=armv7-a -mthumb -Wformat -Werror=format-security    -fPIE -std=gnu++17 -MD -MT CMakeFiles/cmTC_6ab19.dir/src.cxx.o -MF CMakeFiles/cmTC_6ab19.dir/src.cxx.o.d -o CMakeFiles/cmTC_6ab19.dir/src.cxx.o -c /home/declan/Documents/Projects/Products/01_Persnal_Work/call_record/app/.cxx/Debug/6n4p6m10/armeabi-v7a/CMakeFiles/CMakeTmp/src.cxx
+/home/declan/Documents/Projects/Products/01_Persnal_Work/call_record/app/.cxx/Debug/6n4p6m10/armeabi-v7a/CMakeFiles/CMakeTmp/src.cxx:3:24: error: "Feature FP16_VECTOR_ARITHMETIC is not defined"
+    3 |                     #  error "Feature FP16_VECTOR_ARITHMETIC is not defined"
+      |                        ^
+1 error generated.
+ninja: build stopped: subcommand failed.
+
+
+Source file was:
+
+                    #if !defined(__ARM_FEATURE_FP16_VECTOR_ARITHMETIC)
+                    #  error "Feature FP16_VECTOR_ARITHMETIC is not defined"
+                    #endif
+                    int main() { return 0; }
+                    
+Performing C++ SOURCE FILE Test HAVE_SME failed with the following output:
+Change Dir: /home/declan/Documents/Projects/Products/01_Persnal_Work/call_record/app/.cxx/Debug/6n4p6m10/armeabi-v7a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/declan/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_b4a4d && [1/2] Building CXX object CMakeFiles/cmTC_b4a4d.dir/src.cxx.o
+FAILED: CMakeFiles/cmTC_b4a4d.dir/src.cxx.o 
+/home/declan/Android/Sdk/ndk/27.2.12479018/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++ --target=armv7-none-linux-androideabi30 --sysroot=/home/declan/Android/Sdk/ndk/27.2.12479018/toolchains/llvm/prebuilt/linux-x86_64/sysroot -DHAVE_SME  -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -march=armv7-a -mthumb -Wformat -Werror=format-security    -fPIE -std=gnu++17 -MD -MT CMakeFiles/cmTC_b4a4d.dir/src.cxx.o -MF CMakeFiles/cmTC_b4a4d.dir/src.cxx.o.d -o CMakeFiles/cmTC_b4a4d.dir/src.cxx.o -c /home/declan/Documents/Projects/Products/01_Persnal_Work/call_record/app/.cxx/Debug/6n4p6m10/armeabi-v7a/CMakeFiles/CMakeTmp/src.cxx
+/home/declan/Documents/Projects/Products/01_Persnal_Work/call_record/app/.cxx/Debug/6n4p6m10/armeabi-v7a/CMakeFiles/CMakeTmp/src.cxx:3:24: error: "Feature SME is not defined"
+    3 |                     #  error "Feature SME is not defined"
+      |                        ^
+1 error generated.
+ninja: build stopped: subcommand failed.
+
+
+Source file was:
+
+                    #if !defined(__ARM_FEATURE_SME)
+                    #  error "Feature SME is not defined"
+                    #endif
+                    int main() { return 0; }
+                    

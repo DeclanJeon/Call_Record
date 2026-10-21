@@ -29,6 +29,7 @@ import java.util.Locale
  * @param phoneNumber The phone number of the call, when known.
  * @param callDurationMs Duration of the call reported by the telephony stack.
  * @param transcript The speech to text transcript, when a transcription was produced.
+ * @param summary The call summary, when it could be produced.
  * @param createdAtMs Timestamp of the recording.
  */
 data class RecordingReport(
@@ -39,6 +40,7 @@ data class RecordingReport(
     val phoneNumber: String? = null,
     val callDurationMs: Long? = null,
     val transcript: String? = null,
+    val summary: com.declan.callrecord.summary.CallSummary? = null,
     val createdAtMs: Long = System.currentTimeMillis()
 )
 
@@ -141,6 +143,36 @@ object ReportWriter {
             }
             builder.appendLine()
         }
+        val summary = report.summary
+        if (summary != null) {
+            builder.appendLine("[통화 요약]")
+            if (summary.isEmpty) {
+                builder.appendLine("(요약할 만한 내용이 없습니다)")
+            } else {
+                if (summary.keyPoints.isNotEmpty()) {
+                    builder.appendLine("• 핵심 내용")
+                    summary.keyPoints.forEach { builder.appendLine("  - $it") }
+                }
+                if (summary.actionItems.isNotEmpty()) {
+                    builder.appendLine("• 해야 할 일 / 요청")
+                    summary.actionItems.forEach { builder.appendLine("  - $it") }
+                }
+                if (summary.schedules.isNotEmpty()) {
+                    builder.appendLine("• 날짜·시간")
+                    builder.appendLine("  " + summary.schedules.joinToString(", "))
+                }
+                if (summary.amounts.isNotEmpty()) {
+                    builder.appendLine("• 금액")
+                    builder.appendLine("  " + summary.amounts.joinToString(", "))
+                }
+                if (summary.keywords.isNotEmpty()) {
+                    builder.appendLine("• 자주 나온 말")
+                    builder.appendLine("  " + summary.keywords.joinToString(", "))
+                }
+                builder.appendLine("• 발화 시간 : ${formatMs(summary.talkTimeMs)} (전체 ${"%.1f".format(summary.coverageRatio * 100)} %)")
+            }
+            builder.appendLine()
+        }
         if (!report.transcript.isNullOrBlank()) {
             builder.appendLine("[통화 내용 전사]")
             builder.appendLine("-".repeat(48))
@@ -203,6 +235,17 @@ object ReportWriter {
         }
         json.put("voiceSegments", segments)
         report.transcript?.let { json.put("transcript", it) }
+        report.summary?.let { summary ->
+            val summaryJson = JSONObject()
+            summaryJson.put("keyPoints", JSONArray(summary.keyPoints))
+            summaryJson.put("actionItems", JSONArray(summary.actionItems))
+            summaryJson.put("schedules", JSONArray(summary.schedules))
+            summaryJson.put("amounts", JSONArray(summary.amounts))
+            summaryJson.put("keywords", JSONArray(summary.keywords))
+            summaryJson.put("talkTimeMs", summary.talkTimeMs)
+            summaryJson.put("coverageRatio", summary.coverageRatio)
+            json.put("summary", summaryJson)
+        }
         return json
     }
 }
